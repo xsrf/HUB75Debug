@@ -167,6 +167,21 @@ void shiftABC(uint8_t rows, uint8_t level = LOW) {
   }
 }
 
+void toggle(uint8_t pin, uint8_t count = 1) {
+  if(pin == PIN_NC) return;
+  while(count--) {
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(1);
+    digitalWrite(pin, LOW);
+    delayMicroseconds(1);
+  }
+}
+
+void setPin(uint8_t pin, uint8_t level) {
+  if(pin == PIN_NC) return;
+  digitalWrite(pin, level);
+}
+
 void selectDebugRow() {
   // This will help debugging the row selection mechanism
   // It will select:
@@ -181,20 +196,50 @@ void selectDebugRow() {
   if(P_D != PIN_NC) digitalWrite(P_D, LOW );
   if(P_E != PIN_NC) digitalWrite(P_E, LOW );
   // Shift out zeroes to clear SHIFTREG_ABC panels
-  shiftABC(32);
-  // Now shift out one 1 and shift it by 2 rows
-  shiftABC(1, HIGH);
-  shiftABC(2); // Now the third row (row 2) is selected
-  // Now latch this, in case the Panel has a Latch on PIN B!
-  if(P_B != PIN_NC) digitalWrite(P_B, HIGH );
-  if(P_B != PIN_NC) digitalWrite(P_B, LOW );
-  // Now shift once again, this selects row 3
-  shiftABC(1);
+  toggle(P_A,32);
+  toggle(P_B,32);
+  toggle(P_C,32);
+  toggle(P_D,32);
+  toggle(P_E,32);
+  setPin(P_A, HIGH);
+  toggle(P_B);
+  toggle(P_C);
+  toggle(P_D);
+  toggle(P_E);
+  setPin(P_A, LOW);
+  setPin(P_B, HIGH);
+  toggle(P_A);
+  toggle(P_C);
+  toggle(P_D);
+  toggle(P_E);
+  setPin(P_B, LOW);
+  setPin(P_C, HIGH);
+  toggle(P_A);
+  toggle(P_B);
+  toggle(P_D);
+  toggle(P_E);
+  setPin(P_C, LOW);
+  setPin(P_D, HIGH);
+  toggle(P_A);
+  toggle(P_B);
+  toggle(P_C);
+  toggle(P_E);
+  setPin(P_D, LOW);
+  setPin(P_E, HIGH);
+  toggle(P_A);
+  toggle(P_B);
+  toggle(P_C);
+  toggle(P_D);
+  setPin(P_E, LOW);
+  // Now row 0 is selected if E is data, row 4 is selected if A is data
+  toggle(P_B,5); // If B is CLK, now 5-9 are selected
+  toggle(P_C,10); // If C is CLK, now 10-14 is selected
+  toggle(P_D,15); // If D is CLK, now 15-19 is selected
+  toggle(P_E,20); // If E is CLK, now 20-24 is selected
+
+
   // Now activate A
-  if(P_A != PIN_NC) digitalWrite(P_A, HIGH );
-  // This will shift again by one if the shift register triggers on rising edge and select row 4
-  // For STRAIGT, row 0 is selected
-  // For BINARY, row 1 is selected
+  //if(P_A != PIN_NC) digitalWrite(P_A, HIGH );
 }
 
 void selectRow(uint8_t row, uint8_t mux_pattern) {
